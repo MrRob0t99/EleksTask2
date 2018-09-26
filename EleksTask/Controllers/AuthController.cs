@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using EleksTask.Models;
 using Microsoft.AspNetCore.Identity;
@@ -38,19 +40,15 @@ namespace EleksTask.Controllers
                     new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()), 
                 };
 
-                
-                //var credentials = new EncryptingCredentials(new ECDsaSecurityKey(),"C";
 
-                //var token = new JwtSecurityToken(
-                //    issuer: "http://localhost:1111",
-                //    audience: "http://localhost:1111",
-                //    expires: DateTime.Now.AddHours(1),
-                //    claims:claim,
-                //    signingCredentials:new SigningCredentials()
-
-
-
-                //);
+                var credentials = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("SecretKey").Value));
+                var token = new JwtSecurityToken(
+                    issuer: "http://localhost:1111",
+                    audience: "http://localhost:1111",
+                    expires: DateTime.Now.AddHours(1),
+                    claims: claim,
+                    signingCredentials: new SigningCredentials(credentials,SecurityAlgorithms.Sha256)
+                );
 
 
             }
