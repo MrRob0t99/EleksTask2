@@ -1,26 +1,23 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using EleksTask.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TourServer.Models;
 
 namespace EleksTask
 {
-    public class ApllicationContext : IdentityDbContext<ApllicationUser>
+    public class ApplicationContext : IdentityDbContext<ApplicationUser>
     {
-        public ApllicationContext(DbContextOptions<ApllicationContext> options) : base(options)
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
 
         }
 
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            base.OnModelCreating(builder);
-        }
+        public DbSet<Category> Categories { get; set; }
+
+        public DbSet<Product> Products { get; set; }
+
+        public DbSet<EmailToken> EmailTokens { get; set; }
     }
 
-    public class ApllicationUser : IdentityUser
-    {
-        public string FireName { get; set; }
 
-        public string LastName { get; set; }
-    }
 }

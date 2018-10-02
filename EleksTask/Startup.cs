@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using EleksTask.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
+using TourServer;
 
 namespace EleksTask
 {
@@ -35,28 +33,49 @@ namespace EleksTask
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddDbContext<ApllicationContext>(option =>
+            services.AddCors(options => options.AddPolicy("Cors", builder =>
+                {
+                    builder.AllowAnyOrigin().
+                        AllowAnyMethod().
+                        AllowAnyHeader();
+                }
+            ));
+
+            services.AddDbContext<ApplicationContext>(options =>
             {
-                option.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
-            services.AddIdentity<ApllicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApllicationContext>()
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationContext>()
                 .AddDefaultTokenProviders();
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
+                c.SwaggerDoc("v1.0", new Info { Title = "Main API v1.0", Version = "v1.0" });
+
+                // Swagger 2.+ support
+                var security = new Dictionary<string, IEnumerable<string>>
+                {
+                    {"Bearer", new string[] { }},
+                };
+
+                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = "header",
+                    Type = "apiKey"
+                });
+                c.AddSecurityRequirement(security);
             });
-
-
 
 
             services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    //options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                 })
                 .AddJwtBearer(options =>
                 {
@@ -64,17 +83,19 @@ namespace EleksTask
                     options.RequireHttpsMetadata = false;
                     options.TokenValidationParameters = new TokenValidationParameters()
                     {
-                        ValidateAudience = true,
-                        ValidateIssuer = true,
-                        ValidAudience = "http://localhost:1111",
-                        ValidIssuer = "http://localhost:1111",
+                        ValidateAudience = false,
+                        ValidateIssuer = false,
+                        ValidateIssuerSigningKey = true,
                         IssuerSigningKey =
-                            new SymmetricSecurityKey(
-                                Encoding.UTF8.GetBytes(Configuration.GetSection("SecretKey").Value))
+                                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetSection("SecretKey").Value)),
+                        RoleClaimType = "Roles"
+
                     };
                 });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddTransient<IEmailService, EmailService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -89,12 +110,18 @@ namespace EleksTask
                 app.UseHsts();
             }
 
+            app.UseMiddleware<ExceptionMiddleware>();
             app.UseAuthentication();
             app.UseSwagger();
+
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "Versioned API v1.0");
+
+                c.DocumentTitle = "Title Documentation";
+                c.DocExpansion(DocExpansion.None);
             });
+
             SeedDatabase.Initialize(app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope().ServiceProvider);
             app.UseHttpsRedirection();
             app.UseStaticFiles();
