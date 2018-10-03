@@ -1,4 +1,6 @@
-﻿namespace EleksTask.Models
+﻿using System.Collections.Generic;
+
+namespace EleksTask.Models
 {
     public class Product
     {
@@ -13,5 +15,7 @@
         public int CategoryId { get; set; }
 
         public Category Category { get; set; }
+
+        public List<BasketProduct> Baskets { get; set; }
     }
 }

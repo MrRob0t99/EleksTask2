@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EleksTask.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20181002070323_NewConnections")]
-    partial class NewConnections
+    [Migration("20181003075017_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -74,6 +74,21 @@ namespace EleksTask.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("EleksTask.Models.BasketProduct", b =>
+                {
+                    b.Property<int>("ProductId");
+
+                    b.Property<string>("ApolicationuserId");
+
+                    b.Property<string>("ApplicationUserId");
+
+                    b.HasKey("ProductId", "ApolicationuserId");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("BasketProducts");
                 });
 
             modelBuilder.Entity("EleksTask.Models.Category", b =>
@@ -220,10 +235,37 @@ namespace EleksTask.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("TourServer.Models.EmailToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid>("Token");
+
+                    b.Property<string>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmailTokens");
+                });
+
+            modelBuilder.Entity("EleksTask.Models.BasketProduct", b =>
+                {
+                    b.HasOne("EleksTask.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("EleksTask.Models.Product", "Product")
+                        .WithMany("Baskets")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("EleksTask.Models.Product", b =>
                 {
                     b.HasOne("EleksTask.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

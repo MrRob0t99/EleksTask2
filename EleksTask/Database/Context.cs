@@ -12,11 +12,26 @@ namespace EleksTask
 
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<BasketProduct>()
+                .HasKey(t => new { t.ProductId, t.ApolicationuserId });
+
+            //modelBuilder.Entity<ApplicationUser>()
+            //    .HasOne(p => p.Basket)
+            //    .WithOne(i => i.User)
+            //    .HasForeignKey<Basket>(b => b.ApplicationUserId);
+        }
+
         public DbSet<Category> Categories { get; set; }
 
         public DbSet<Product> Products { get; set; }
 
         public DbSet<EmailToken> EmailTokens { get; set; }
+
+        public DbSet<BasketProduct> BasketProducts { get; set; }
     }
 
 

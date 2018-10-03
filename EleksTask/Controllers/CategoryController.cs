@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using EleksTask.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -67,14 +68,5 @@ namespace EleksTask
             return Ok();
         }
 
-        [HttpGet("{categoryId}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetPrductsByCategoryIdAsync([FromRoute]int categoryId)
-        {
-            var category = await _context.Categories.Include(c=>c.Products).FirstOrDefaultAsync(c => c.Id == categoryId);
-            if (category == null)
-                return BadRequest("Category not found");
-            return Ok(category);
-        }
     }
 }

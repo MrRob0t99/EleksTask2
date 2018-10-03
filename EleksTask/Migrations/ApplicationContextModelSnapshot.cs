@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EleksTask.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApllicationContextModelSnapshot : ModelSnapshot
+    partial class ApplicationContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -72,6 +72,21 @@ namespace EleksTask.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("EleksTask.Models.BasketProduct", b =>
+                {
+                    b.Property<int>("ProductId");
+
+                    b.Property<string>("ApolicationuserId");
+
+                    b.Property<string>("ApplicationUserId");
+
+                    b.HasKey("ProductId", "ApolicationuserId");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("BasketProducts");
                 });
 
             modelBuilder.Entity("EleksTask.Models.Category", b =>
@@ -226,17 +241,29 @@ namespace EleksTask.Migrations
 
                     b.Property<Guid>("Token");
 
-                    b.Property<int>("UserId");
+                    b.Property<string>("UserId");
 
                     b.HasKey("Id");
 
                     b.ToTable("EmailTokens");
                 });
 
+            modelBuilder.Entity("EleksTask.Models.BasketProduct", b =>
+                {
+                    b.HasOne("EleksTask.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("EleksTask.Models.Product", "Product")
+                        .WithMany("Baskets")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("EleksTask.Models.Product", b =>
                 {
                     b.HasOne("EleksTask.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

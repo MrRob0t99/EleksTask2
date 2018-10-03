@@ -6,28 +6,36 @@ using System.Text;
 using System.Threading.Tasks;
 using EleksTask.Dto;
 using EleksTask.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using TourServer;
+using TourServer.Models;
 
 namespace EleksTask.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        public readonly IConfiguration _configuration;
-        private RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationContext _context;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(UserManager<ApplicationUser> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager)
+        public AuthController(UserManager<ApplicationUser> userManager, IEmailService emailService,IConfiguration configuration,
+            RoleManager<IdentityRole> roleManager, ApplicationContext context)
         {
             _userManager = userManager;
-            _configuration = configuration;
             _roleManager = roleManager;
+            _context = context;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
         [HttpPost("token")]
@@ -58,35 +66,62 @@ namespace EleksTask.Controllers
                     token = handler.WriteToken(token),
                     exparion = token.ValidTo
                 });
-        }
+            }
 
             return BadRequest("Data is not valid");
-    }
-
-    [HttpPost("registration")]
-    public async Task<IActionResult> Registration([FromBody] RegistrationDto registrationDto)
-    {
-        var user = new ApplicationUser()
-        {
-            Email = registrationDto.Email,
-            FirstName = registrationDto.FirstName,
-            LastName = registrationDto.LastName,
-            UserName = registrationDto.UserName
-        };
-
-        if (!await _roleManager.RoleExistsAsync(registrationDto.Role.ToString()))
-        {
-            await _roleManager.CreateAsync(new IdentityRole(registrationDto.Role.ToString()));
         }
 
-        var result = await _userManager.CreateAsync(user, registrationDto.Password);
-        if (result.Errors != null && result.Errors.Any())
+        [HttpPost("registration")]
+        public async Task<IActionResult> Registration([FromBody] RegistrationDto registrationDto)
         {
-            return BadRequest(result.Errors.Select(e => e.Description).Aggregate((a, b) => a + b));
+            var user = new ApplicationUser()
+            {
+                Email = registrationDto.Email,
+                FirstName = registrationDto.FirstName,
+                LastName = registrationDto.LastName,
+                UserName = registrationDto.UserName
+            };
+
+            if (!await _roleManager.RoleExistsAsync(registrationDto.Role.ToString()))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(registrationDto.Role.ToString()));
+            }
+
+            var result = await _userManager.CreateAsync(user, registrationDto.Password);
+            if (result.Errors != null && result.Errors.Any())
+            {
+                return BadRequest(result.Errors.Select(e => e.Description).Aggregate((a, b) => a + b));
+            }
+            await _userManager.AddToRoleAsync(user, registrationDto.Role.ToString());
+
+            var token = new EmailToken()
+            {
+                UserId = user.Id,
+                Token = Guid.NewGuid()
+            };
+
+            await _context.EmailTokens.AddAsync(token);
+            await _context.SaveChangesAsync();
+            var apiPath = "https://localhost:1111/api/Auth/confirmEmail?token=" + token.Token + "&userId=" + user.Id;
+            var link = "<a href='" + apiPath + "'>link</a>";
+            await _emailService.SendEmailAsync(user.Email, "Confirm Email", link);
+            return Ok(user.Id);
         }
-        await _userManager.AddToRoleAsync(user, registrationDto.Role.ToString());
-        return Ok();
+
+        [HttpGet("confirmEmail")]
+        public async Task<ActionResult> ConfirmEmail([FromQuery]Guid token, [FromQuery] string userId)
+        {
+            var tok = await _context.EmailTokens.AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId && t.Token == token);
+            if (tok == null)
+            {
+                return NotFound("Not Found");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            user.EmailConfirmed = true;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
     }
-}
 
 }

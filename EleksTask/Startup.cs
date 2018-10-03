@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using AutoMapper;
 using EleksTask.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -94,6 +95,8 @@ namespace EleksTask
                 });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddAutoMapper();
 
             services.AddTransient<IEmailService, EmailService>();
         }
