@@ -17,7 +17,7 @@ namespace EleksTask
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<BasketProduct>()
-                .HasKey(t => new { t.ProductId, t.ApolicationuserId });
+                .HasKey(t => new { t.ProductId, t.ApplicationUserId });
 
         }
 

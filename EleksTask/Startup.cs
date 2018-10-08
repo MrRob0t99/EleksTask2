@@ -104,6 +104,7 @@ namespace EleksTask
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<IBasketService, BasketService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

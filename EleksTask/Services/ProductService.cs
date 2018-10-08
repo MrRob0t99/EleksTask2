@@ -53,34 +53,35 @@ namespace EleksTask.Services
             return response;
         }
 
-        public async Task<Response<List<Product>>> GetAllProducts()
+        public async Task<Response<List<ProductDto>>> GetAllProducts()
         {
-            var response = new Response<List<Product>>();
-            response.Data = await _context.Products.AsNoTracking().ToListAsync();
+            var response = new Response<List<ProductDto>>();
+            var products = await _context.Products.AsNoTracking().ToListAsync();
+            response.Data = _mapper.Map<List<ProductDto>>(products);
             return response;
         }
 
-        public async Task<Response<List<Product>>> GetProductsByCategoryIdAsync(int categoryId)
+        public async Task<Response<List<ProductDto>>> GetProductsByCategoryIdAsync(int categoryId)
         {
-            var response = new Response<List<Product>>();
-            response.Data = await _context
+            var response = new Response<List<ProductDto>>();
+            var products = await _context
                .Products
+               .AsNoTracking()
                .Where(p => p.CategoryId == categoryId)
                .Select(pr => pr)
                .ToListAsync();
-
+            response.Data = _mapper.Map<List<ProductDto>>(products);
             return response;
         }
 
-        public async Task<Response<Product>> GetProduct(int productId)
+        public async Task<Response<ProductDto>> GetProduct(int productId)
         {
-            var response = new Response<Product>();
+            var response = new Response<ProductDto>();
             var product = await _context.Products.AsNoTracking().FirstAsync(p => p.Id == productId);
             if (product == null)
                 response.Error = new Error("Product not found");
-
             else
-                response.Data = product;
+                response.Data = _mapper.Map<ProductDto>(product);
 
             return response;
         }

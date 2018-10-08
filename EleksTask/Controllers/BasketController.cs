@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using EleksTask.Models;
+﻿using System.Threading.Tasks;
+using EleksTask.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EleksTask
 {
@@ -11,45 +9,37 @@ namespace EleksTask
     [ApiController]
     public class BasketController : ControllerBase
     {
-        private readonly ApplicationContext _context;
+        private readonly IBasketService _basketService;
 
-        public BasketController(ApplicationContext context)
+        public BasketController(IBasketService basketService)
         {
-            _context = context;
+            _basketService = basketService;
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddProductToBasketAsync([FromQuery]string userName, [FromQuery] int productId)
+        public async Task<IActionResult> AddProductToBasketAsync([FromQuery]string userId, [FromQuery] int productId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
-            if (user == null)
-                return BadRequest("User not found");
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
-            if (product == null)
-                return BadRequest("Product not found");
-            var basketProduct = new BasketProduct()
+            var response = await _basketService.AddProductToBasketAsync(userId, productId);
+            if (response.Error != null)
             {
-                ApplicationUser = user,
-                Product = product
-            };
-            await _context.BasketProducts.AddAsync(basketProduct);
-            await _context.SaveChangesAsync();
-            return Ok();
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet("{userId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetInfoProduct([FromRoute] string userId)
         {
-            var productList = await _context
-                .BasketProducts
-                .Where(bp => bp.ApolicationuserId == userId)
-                .Include(p=>p.Product)
-                .Select(p => p.Product)
-                .ToListAsync();
+            var response = await _basketService.GetInfoProduct(userId);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
 
-            return Ok(new {Products = productList,TotalPrice = productList.Sum(p=>p.Price)});
+            return Ok(response);
         }
     }
 }
