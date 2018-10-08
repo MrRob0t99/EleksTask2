@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Text;
 using AutoMapper;
+using EleksTask.Interface;
 using EleksTask.Models;
+using EleksTask.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -99,6 +101,7 @@ namespace EleksTask
             services.AddAutoMapper();
 
             services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IAuth, AuthServices>()
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
