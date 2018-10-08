@@ -5,19 +5,17 @@ using AutoMapper;
 using EleksTask.Dto;
 using EleksTask.Interface;
 using EleksTask.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace EleksTask.Services
 {
-    public class ProductServices : IProduct
+    public class ProductService : IProductService
     {
 
         private readonly ApplicationContext _context;
         private readonly IMapper _mapper;
-        public ProductServices(ApplicationContext context, IMapper mapper)
+        public ProductService(ApplicationContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -74,7 +72,7 @@ namespace EleksTask.Services
             return response;
         }
 
-        public async Task<Response<Product>> GetProduct([FromRoute]int productId)
+        public async Task<Response<Product>> GetProduct(int productId)
         {
             var response = new Response<Product>();
             var product = await _context.Products.AsNoTracking().FirstAsync(p => p.Id == productId);

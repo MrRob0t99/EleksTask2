@@ -101,7 +101,8 @@ namespace EleksTask
             services.AddAutoMapper();
 
             services.AddTransient<IEmailService, EmailService>();
-            services.AddTransient<IAuth, AuthServices>()
+            services.AddTransient<IAuthService, AuthServiceServices>();
+            services.AddTransient<IProductService, ProductService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
