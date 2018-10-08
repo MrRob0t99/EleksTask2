@@ -8,7 +8,6 @@ using EleksTask.Dto;
 using EleksTask.Interface;
 using EleksTask.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -16,7 +15,7 @@ using TourServer.Models;
 
 namespace EleksTask.Services
 {
-    public class AuthServices : IAuth
+    public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -24,7 +23,7 @@ namespace EleksTask.Services
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
 
-        public AuthServices(UserManager<ApplicationUser> userManager, IEmailService emailService, IConfiguration configuration,
+        public AuthService(UserManager<ApplicationUser> userManager, IEmailService emailService, IConfiguration configuration,
             RoleManager<IdentityRole> roleManager, ApplicationContext context)
         {
             _userManager = userManager;
@@ -37,7 +36,7 @@ namespace EleksTask.Services
         public async Task<Response<LogInResponseDto>> LogInAsync(LogInRequestDto logInDto)
         {
             var response = new Response<LogInResponseDto>();
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == logInDto.UserName && u.EmailConfirmed);//
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == logInDto.UserName );//&& u.EmailConfirmed
             if (user != null && await _userManager.CheckPasswordAsync(user, logInDto.Password))
             {
                 var roles = await _userManager.GetRolesAsync(user);
@@ -104,7 +103,7 @@ namespace EleksTask.Services
             await _context.SaveChangesAsync();
             var apiPath = "https://localhost:1111/api/Auth/confirmEmail?token=" + token.Token + "&userId=" + user.Id;
             var link = "<a href='" + apiPath + "'>link</a>";
-            await _emailService.SendEmailAsync(user.Email, "Confirm Email", link);
+            //await _emailService.SendEmailAsync(user.Email, "Confirm Email", link);
             response.Data = user.Id;
             return response;
         }

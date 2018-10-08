@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
+using EleksTask.Dto;
 using EleksTask.Interface;
 using EleksTask.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +12,12 @@ namespace EleksTask.Services
     public class CategoryService :ICategoryService
     {
         private readonly ApplicationContext _context;
+        private readonly IMapper _mapper;
 
-        public CategoryService(ApplicationContext context)
+        public CategoryService(ApplicationContext context , IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<Response<int>> CreateCategoryAsync(string name)
@@ -47,10 +51,11 @@ namespace EleksTask.Services
             return response;
         }
 
-        public async Task<Response<List<Category>>> GetAllCategories()
+        public async Task<Response<List<GetAllCategoryDto>>> GetAllCategories()
         {
-            var response = new Response<List<Category>>();
-            response.Data = await _context.Categories.AsNoTracking().ToListAsync();
+            var response = new Response<List<GetAllCategoryDto>>();
+            var categories = await _context.Categories.AsNoTracking().ToListAsync();
+            response.Data = _mapper.Map<List<GetAllCategoryDto>>(categories);
             return response;
         }
 
@@ -65,6 +70,7 @@ namespace EleksTask.Services
             }
             category.Name = newName;
             await _context.SaveChangesAsync();
+            response.Data = true;
             return response;
         }
 

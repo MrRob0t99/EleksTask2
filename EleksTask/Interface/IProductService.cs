@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EleksTask.Interface
 {
-    public interface IProduct
+    public interface IProductService
     {
         Task<Response<int>> CreateProductAsync(int categoryId, CreateProductDto productDto);
 

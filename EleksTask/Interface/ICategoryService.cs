@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using EleksTask.Models;
+using EleksTask.Dto;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EleksTask.Interface
@@ -11,7 +11,7 @@ namespace EleksTask.Interface
 
         Task<Response<bool>> DeleteCategoryAsync([FromRoute] int categoryId);
 
-        Task<Response<List<Category>>> GetAllCategories();
+        Task<Response<List<GetAllCategoryDto>>> GetAllCategories();
 
         Task<Response<bool>> RenameCategoryAsync(int categoryId, string newName);
     }

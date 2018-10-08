@@ -19,10 +19,6 @@ namespace EleksTask
             modelBuilder.Entity<BasketProduct>()
                 .HasKey(t => new { t.ProductId, t.ApolicationuserId });
 
-            //modelBuilder.Entity<ApplicationUser>()
-            //    .HasOne(p => p.Basket)
-            //    .WithOne(i => i.User)
-            //    .HasForeignKey<Basket>(b => b.ApplicationUserId);
         }
 
         public DbSet<Category> Categories { get; set; }

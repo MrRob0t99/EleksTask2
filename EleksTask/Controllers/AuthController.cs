@@ -13,17 +13,17 @@ namespace EleksTask.Controllers
     [AllowAnonymous]
     public class AuthController : ControllerBase
     {
-        private readonly IAuth _auth;
+        private readonly IAuthService _authService;
 
-        public AuthController(IAuth auth)
+        public AuthController(IAuthService authService)
         {
-            _auth = auth;
+            _authService = authService;
         }
 
         [HttpPost("token")]
         public async Task<IActionResult> LogInAsync([FromBody] LogInRequestDto logInDto)
         {
-            var response = await _auth.LogInAsync(logInDto);
+            var response = await _authService.LogInAsync(logInDto);
             if (response.Error != null)
             {
                 return BadRequest(response);
@@ -36,7 +36,7 @@ namespace EleksTask.Controllers
         [HttpPost("registration")]
         public async Task<IActionResult> Registration([FromBody] RegistrationDto registrationDto)
         {
-            var response = await _auth.Registration(registrationDto);
+            var response = await _authService.Registration(registrationDto);
             if (response.Error != null)
             {
                 return BadRequest(response);
@@ -48,7 +48,7 @@ namespace EleksTask.Controllers
         [HttpGet("confirmEmail")]
         public async Task<ActionResult> ConfirmEmail([FromQuery]Guid token, [FromQuery] string userId)
         {
-            var response = await _auth.ConfirmEmail(token, userId);
+            var response = await _authService.ConfirmEmail(token, userId);
             if (response.Error != null)
             {
                 return BadRequest(response);

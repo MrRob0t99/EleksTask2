@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EleksTask.Interface
 {
-    public interface IAuth
+    public interface IAuthService
     {
         Task<Response<LogInResponseDto>> LogInAsync([FromBody] LogInRequestDto logInDto);
 

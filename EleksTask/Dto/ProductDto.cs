@@ -1,6 +1,11 @@
-﻿namespace EleksTask.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace EleksTask.Dto
 {
-    public class Product
+    public class ProductDto
     {
         public int Id { get; set; }
 
@@ -9,9 +14,5 @@
         public string Description { get; set; }
 
         public double Price { get; set; }
-
-        public int CategoryId { get; set; }
-
-        public Category Category { get; set; }
     }
 }

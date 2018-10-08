@@ -1,6 +1,6 @@
 ﻿namespace EleksTask.Models
 {
-    public class LogInDto
+    public class LogInRequestDto
     {
         public string UserName { get; set; }
 
