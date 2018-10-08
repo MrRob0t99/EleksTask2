@@ -1,13 +1,13 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using EleksTask.Interface;
 using EleksTask.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EleksTask.Services
 {
-    public class CategoryService
+    public class CategoryService :ICategoryService
     {
         private readonly ApplicationContext _context;
 
@@ -46,24 +46,27 @@ namespace EleksTask.Services
             response.Data = true;
             return response;
         }
-        public async Task<IActionResult> GetAllCategories()
+
+        public async Task<Response<List<Category>>> GetAllCategories()
         {
-            var categories = await _context.Categories.AsNoTracking().ToListAsync();
-            return Ok(categories);
+            var response = new Response<List<Category>>();
+            response.Data = await _context.Categories.AsNoTracking().ToListAsync();
+            return response;
         }
 
-        public async Task<IActionResult> RenameCategoryAsync([FromRoute]int categoryId, [FromBody]string newName)
+        public async Task<Response<bool>> RenameCategoryAsync(int categoryId,string newName)
         {
+            var response = new Response<bool>();
             var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
             if (category == null)
-                return BadRequest("Category not found");
+            {
+                response.Error = new Error("Category not found");
+                return response;
+            }
             category.Name = newName;
             await _context.SaveChangesAsync();
-            return Ok();
+            return response;
         }
 
     }
-}
-
-}
 }

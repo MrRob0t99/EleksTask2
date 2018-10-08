@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using EleksTask.Models;
+﻿using System.Threading.Tasks;
+using EleksTask.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EleksTask
 {
@@ -11,61 +9,63 @@ namespace EleksTask
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly ApplicationContext _context;
+        private readonly ICategoryService _categoryService;
 
-        public CategoryController(ApplicationContext context)
+        public CategoryController(ICategoryService categoryService)
         {
-            _context = context;
+            _categoryService = categoryService;
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateCategoryAsync([FromBody]string name)
         {
-
-            if (await _context.Categories.AnyAsync(c => c.Name == name))
+            var response = await _categoryService.CreateCategoryAsync(name);
+            if (response.Error != null)
             {
-                return BadRequest($"Category with {name} already exist");
+                return BadRequest(response);
             }
-            var newCategory = new Category()
-            {
-                Name = name
-            };
-            await _context.Categories.AddAsync(newCategory);
-            await _context.SaveChangesAsync();
-            return Ok(newCategory);
+
+            return Ok(response);
         }
 
         [HttpDelete("{categoryId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCategoryAsync([FromRoute] int categoryId)
         {
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
-            if (category == null)
-                return BadRequest();
-            _context.Remove(category);
-            await _context.SaveChangesAsync();
-            return Ok(true);
+            var response = await _categoryService.DeleteCategoryAsync(categoryId);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllCategories()
         {
-            var categories = await _context.Categories.AsNoTracking().ToListAsync();
-            return Ok(categories);
+            var response = await _categoryService.GetAllCategories();
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpPut("{categoryId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RenameCategoryAsync([FromRoute]int categoryId, [FromBody]string newName)
         {
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
-            if (category == null)
-                return BadRequest("Category not found");
-            category.Name = newName;
-            await _context.SaveChangesAsync();
-            return Ok();
+            var response = await _categoryService.RenameCategoryAsync(categoryId, newName);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
 
     }

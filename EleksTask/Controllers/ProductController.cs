@@ -1,11 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using System.Threading.Tasks;
 using EleksTask.Dto;
-using EleksTask.Models;
+using EleksTask.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EleksTask
 {
@@ -13,69 +10,75 @@ namespace EleksTask
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly ApplicationContext _context;
-        private readonly IMapper _mapper;
-        public ProductController(ApplicationContext context, IMapper mapper)
+        private readonly IProductService _productService;
+        public ProductController(IProductService productService)
         {
-            _context = context;
-            _mapper = mapper;
+            _productService = productService;
         }
 
         [HttpPost("{categoryId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateProductAsync([FromRoute] int categoryId, [FromBody]CreateProductDto productDto)
         {
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
-            if (category == null)
-                return BadRequest("Category not found");
-            var product = _mapper.Map<Product>(productDto);
-            product.Category = category;
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
-            return Ok();
+            var response = await _productService.CreateProductAsync(categoryId, productDto);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{productId}")]
         public async Task<IActionResult> DeleteProductAsync([FromRoute] int productId)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
-            if (product == null)
-                return BadRequest();
-            _context.Remove(product);
-            await _context.SaveChangesAsync();
-            return Ok(true);
+            var response = await _productService.DeleteProductAsync(productId);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
 
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
-            var products = await _context.Products.AsNoTracking().ToListAsync();
-            return Ok(products);
+            var response = await _productService.GetAllProducts();
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet("{categoryId}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProductsByCategoryIdAsync([FromRoute]int categoryId)
         {
-            var productList = await _context
-                .Products
-                .Where(p => p.CategoryId == categoryId)
-                .Select(pr => new {pr.Id, pr.Name, pr.Price})
-                .ToListAsync();
+            var response = await _productService.GetProductsByCategoryIdAsync(categoryId);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
 
-            return Ok(productList);
+            return Ok(response);
         }
 
         [HttpGet("{productId}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProduct([FromRoute]int productId)
         {
-            var product = _context.Products.AsNoTracking().FirstAsync(p => p.Id == productId);
-            if (product == null)
-                return BadRequest("Not found");
-            return Ok(product);
+            var response = await _productService.GetProduct(productId);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
     }
 }
