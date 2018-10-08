@@ -47,7 +47,7 @@ namespace EleksTask.Services
             return response;
         }
 
-        public async Task<Response<BasketDto>> GetInfoProduct(string userId)
+        public async Task<Response<BasketDto>> GetInfoProductAsync(string userId)
         {
             var response = new Response<BasketDto>();
             var productList = await _context
@@ -62,6 +62,25 @@ namespace EleksTask.Services
                 Product = _mapper.Map<List<ProductDto>>(productList)
             };
             return response;
+        }
+
+        public async Task<Response<bool>> DeleteProductFromBasketAsync(string userId, int productId)
+        {
+            var response = new Response<bool>();
+            var basket =
+                await _context.BasketProducts.FirstOrDefaultAsync(b =>
+                    b.ApplicationUserId == userId && b.ProductId == productId);
+            if (basket == null)
+            {
+                response.Error = new Error("Not Found");
+                return response;
+            }
+
+            _context.Remove(basket);
+            await _context.SaveChangesAsync();
+            response.Data = true;
+            return response;
+
         }
     }
 }

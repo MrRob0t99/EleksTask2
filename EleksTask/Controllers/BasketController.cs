@@ -17,7 +17,7 @@ namespace EleksTask
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> AddProductToBasketAsync([FromQuery]string userId, [FromQuery] int productId)
         {
             var response = await _basketService.AddProductToBasketAsync(userId, productId);
@@ -30,10 +30,23 @@ namespace EleksTask
         }
 
         [HttpGet("{userId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> GetInfoProduct([FromRoute] string userId)
         {
-            var response = await _basketService.GetInfoProduct(userId);
+            var response = await _basketService.GetInfoProductAsync(userId);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpDelete]
+        [Authorize(Roles = "Admin,Customer")]
+        public async Task<IActionResult> DeleteProductFromBasketAsync([FromQuery] string userId,[FromQuery]int productId)
+        {
+            var response = await _basketService.DeleteProductFromBasketAsync(userId,productId);
             if (response.Error != null)
             {
                 return BadRequest(response);

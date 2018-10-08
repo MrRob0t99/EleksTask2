@@ -6,6 +6,8 @@ namespace EleksTask.Interface
     {
         Task<Response<bool>> AddProductToBasketAsync(string userId, int productId);
 
-        Task<Response<BasketDto>> GetInfoProduct(string userId);
+        Task<Response<BasketDto>> GetInfoProductAsync(string userId);
+
+        Task<Response<bool>> DeleteProductFromBasketAsync(string userId, int productId);
     }
 }
