@@ -10,13 +10,12 @@ namespace EleksTask.Services
 {
     public class CategoryService :ICategoryService
     {
-        private readonly ApplicationContext _context;
+
         private readonly IMapper _mapper;
         private readonly ICategoryRepository _repository;
 
-        public CategoryService(ApplicationContext context , IMapper mapper, ICategoryRepository repository)
+        public CategoryService(IMapper mapper, ICategoryRepository repository)
         {
-            _context = context;
             _mapper = mapper;
             _repository = repository;
         }
