@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EleksTask;
 using EleksTask.Interface;
 using EleksTask.Models;
 using Microsoft.EntityFrameworkCore;
@@ -10,22 +9,22 @@ namespace EleksTask.Repository
 {
     public class BasketRepository : IBasketRepository
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private ApplicationContext _context;
 
-        public BasketRepository(IUnitOfWork unitOfWork)
+        public BasketRepository(ApplicationContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<int> Add(string userId, int productId)
         {
-            var user = await _unitOfWork.Context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
             {
                 return -1;
             }
 
-            var product = await _unitOfWork.Context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
             if (product == null)
             {
                 return -1;
@@ -36,21 +35,21 @@ namespace EleksTask.Repository
                 ApplicationUser = user,
                 Product = product
             };
-            await _unitOfWork.Context.BasketProducts.AddAsync(basketProduct);
-            await _unitOfWork.Commit();
+            await _context.BasketProducts.AddAsync(basketProduct);
+            await _context.SaveChangesAsync();
             return basketProduct.Id;
         }
 
         public async Task<bool> Delete(string userId, int productId)
         {
             var basket =
-                await _unitOfWork.Context.BasketProducts.FirstOrDefaultAsync(b =>
+                await _context.BasketProducts.FirstOrDefaultAsync(b =>
                     b.ApplicationUserId == userId && b.ProductId == productId);
 
             if (basket != null)
             {
-                _unitOfWork.Context.BasketProducts.Remove(basket);
-                await _unitOfWork.Commit();
+                _context.BasketProducts.Remove(basket);
+                await _context.SaveChangesAsync();
                 return true;
             }
 
@@ -59,7 +58,7 @@ namespace EleksTask.Repository
 
         public async Task<List<Product>> GetInfoProductAsync(string userId)
         {
-            return await _unitOfWork.Context
+            return await _context
                 .BasketProducts
                 .Where(bp => bp.ApplicationUserId == userId)
                 .Include(p => p.Product)

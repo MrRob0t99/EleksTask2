@@ -9,32 +9,32 @@ namespace EleksTask.Repository
 {
     public class CategoryRepository : ICategoryRepository
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ApplicationContext _context;
 
-        public CategoryRepository(IUnitOfWork unitOfWork)
+        public CategoryRepository(ApplicationContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<int> Add(Category entity)
         {
-            if (await _unitOfWork.Context.Categories.AnyAsync(c => c.Name == entity.Name))
+            if (await _context.Categories.AnyAsync(c => c.Name == entity.Name))
             {
                 return -1;
             }
 
-            await _unitOfWork.Context.Categories.AddAsync(entity);
-            await _unitOfWork.Commit();
+            await _context.Categories.AddAsync(entity);
+            await _context.SaveChangesAsync();
             return entity.Id;
         }
 
         public async Task<bool> Delete(int id)
         {
-            var existing = await _unitOfWork.Context.Categories.FindAsync(id);
+            var existing = await _context.Categories.FindAsync(id);
             if (existing != null)
             {
-                _unitOfWork.Context.Categories.Remove(existing);
-                await _unitOfWork.Commit();
+                _context.Categories.Remove(existing);
+                await _context.SaveChangesAsync();
                 return true;
             }
 
@@ -43,21 +43,21 @@ namespace EleksTask.Repository
 
         public async Task<Category> GetById(int categoryId)
         {
-            return await _unitOfWork.Context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
+            return await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
         }
 
         public async Task<List<Category>> GetAll()
         {
-            return await _unitOfWork.Context.Categories.ToListAsync();
+            return await _context.Categories.ToListAsync();
         }
 
         public async Task<bool> Rename(int categoryId, string newName)
         {
-            var existing = await _unitOfWork.Context.Categories.FindAsync(categoryId);
+            var existing = await _context.Categories.FindAsync(categoryId);
             if (existing != null)
             {
                 existing.Name = newName;
-                await _unitOfWork.Commit();
+                await _context.SaveChangesAsync();
                 return true;
             }
 

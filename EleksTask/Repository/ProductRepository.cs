@@ -10,34 +10,34 @@ namespace EleksTask.Repository
 {
     public class ProductRepository : IProductRepository
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ApplicationContext _context;
 
-        public ProductRepository(IUnitOfWork unitOfWork)
+        public ProductRepository(ApplicationContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<int> Add(int categoryId, Product entity)
         {
-            var category = await _unitOfWork.Context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
             if (category == null)
             {
                 return -1;
             }
 
             entity.Category = category;
-            await _unitOfWork.Context.Products.AddAsync(entity);
-            await _unitOfWork.Commit();
+            await _context.Products.AddAsync(entity);
+            await _context.SaveChangesAsync();
             return entity.Id;
         }
 
         public async Task<bool> Delete(int id)
         {
-            var existing = await _unitOfWork.Context.Products.FindAsync(id);
+            var existing = await _context.Products.FindAsync(id);
             if (existing != null)
             {
-                _unitOfWork.Context.Products.Remove(existing);
-                await _unitOfWork.Commit();
+                _context.Products.Remove(existing);
+                await _context.SaveChangesAsync();
                 return true;
             }
 
@@ -46,12 +46,12 @@ namespace EleksTask.Repository
 
         public async Task<Product> GetById(int productId)
         {
-            return await _unitOfWork.Context.Products.AsNoTracking().FirstOrDefaultAsync(c => c.Id == productId);
+            return await _context.Products.AsNoTracking().FirstOrDefaultAsync(c => c.Id == productId);
         }
 
         public async Task<List<Product>> GetProductsByCategoryId(int categoryId, int skip, int take, string search)
         {
-            return await _unitOfWork.Context.Products.AsNoTracking()
+            return await _context.Products.AsNoTracking()
                 .Where(p => p.CategoryId == categoryId && p.Name.Contains(search))
                 .Skip(skip)
                 .Take(take)
@@ -61,16 +61,16 @@ namespace EleksTask.Repository
 
         public async Task<List<Product>> GetAll()
         {
-            return await _unitOfWork.Context.Products.ToListAsync();
+            return await _context.Products.ToListAsync();
         }
 
         public async Task<bool> Rename(int categoryId, string newName)
         {
-            var existing = await _unitOfWork.Context.Products.FindAsync(categoryId);
+            var existing = await _context.Products.FindAsync(categoryId);
             if (existing != null)
             {
                 existing.Name = newName;
-                await _unitOfWork.Commit();
+                await _context.SaveChangesAsync();
                 return true;
             }
 

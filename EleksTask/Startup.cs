@@ -107,7 +107,6 @@ namespace EleksTask
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<IBasketService, BasketService>();
 
-            services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<ICategoryRepository, CategoryRepository>();
             services.AddTransient<IProductRepository, ProductRepository>();
             services.AddTransient<IBasketRepository, BasketRepository>();
