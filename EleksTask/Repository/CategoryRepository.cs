@@ -17,7 +17,7 @@ namespace EleksTask.Repository
         }
 
         public async Task<int> Add(Category entity)
-        {
+         {
             if (await _context.Categories.AnyAsync(c => c.Name == entity.Name))
             {
                 return -1;
