@@ -14,5 +14,7 @@ namespace EleksTask.Interface
         Task<Response<List<GetAllCategoryDto>>> GetAllCategories();
 
         Task<Response<bool>> RenameCategoryAsync(int categoryId, string newName);
+
+        Task<Response<GetCategoryDto>> GetCategoryByIdAsync(int categoryId);
     }
 }

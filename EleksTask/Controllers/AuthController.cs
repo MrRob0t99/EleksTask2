@@ -36,6 +36,9 @@ namespace EleksTask.Controllers
         [HttpPost("registration")]
         public async Task<IActionResult> Registration([FromBody] RegistrationDto registrationDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
             var response = await _authService.Registration(registrationDto);
             if (response.Error != null)
             {

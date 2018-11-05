@@ -12,7 +12,7 @@ namespace EleksTask.Interface
 
         Task<Response<List<ProductDto>>> GetAllProducts();
 
-        Task<Response<List<ProductDto>>> GetProductsByCategoryIdAsync(int categoryId);
+        Task<Response<List<ProductDto>>> GetProductsByCategoryIdAsync(GetProductsRequestDto productsRequestDto);
 
         Task<Response<ProductDto>> GetProduct(int productId);
     }

@@ -5,7 +5,6 @@ using EleksTask.Dto;
 using EleksTask.Interface;
 using EleksTask.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EleksTask.Services
 {
@@ -13,63 +12,74 @@ namespace EleksTask.Services
     {
         private readonly ApplicationContext _context;
         private readonly IMapper _mapper;
+        private readonly ICategoryRepository _repository;
 
-        public CategoryService(ApplicationContext context , IMapper mapper)
+        public CategoryService(ApplicationContext context , IMapper mapper, ICategoryRepository repository)
         {
             _context = context;
             _mapper = mapper;
+            _repository = repository;
         }
 
         public async Task<Response<int>> CreateCategoryAsync(string name)
         {
             var response = new Response<int>();
-            if (await _context.Categories.AnyAsync(c => c.Name == name))
-            {
-                response.Error = new Error($"Category with {name} already exist");
-            }
             var newCategory = new Category()
             {
                 Name = name
             };
-            await _context.Categories.AddAsync(newCategory);
-            await _context.SaveChangesAsync();
-            response.Data = newCategory.Id;
+            var res = await _repository.Add(newCategory);
+            if (res == -1)
+            {
+                response.Error = new Error($"Category with {name} already exist");
+                return response;
+            }
+            response.Data = res;
             return response;
         }
 
         public async Task<Response<bool>> DeleteCategoryAsync([FromRoute] int categoryId)
         {
             var response = new Response<bool>();
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
-            if (category == null)
+            var result = await _repository.Delete(categoryId);
+            if (!result)
             {
                 response.Error = new Error("Category not found");
             }
-            _context.Remove(category);
-            await _context.SaveChangesAsync();
-            response.Data = true;
+            response.Data = result;
             return response;
         }
 
         public async Task<Response<List<GetAllCategoryDto>>> GetAllCategories()
         {
             var response = new Response<List<GetAllCategoryDto>>();
-            var categories = await _context.Categories.AsNoTracking().ToListAsync();
+            var categories = await _repository.GetAll();
             response.Data = _mapper.Map<List<GetAllCategoryDto>>(categories);
+            return response;
+        }
+
+        public async Task<Response<GetCategoryDto>> GetCategoryByIdAsync(int categoryId)
+        {
+            var response = new Response<GetCategoryDto>();
+            var category =await _repository.GetById(categoryId);
+            if (category == null)
+            {
+                response.Error = new Error("Category not found");
+                return response;
+            }
+            response.Data = _mapper.Map<GetCategoryDto>(category);
             return response;
         }
 
         public async Task<Response<bool>> RenameCategoryAsync(int categoryId,string newName)
         {
             var response = new Response<bool>();
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
-            if (category == null)
+            var result = await _repository.Rename(categoryId,newName);
+            if (!result)
             {
                 response.Error = new Error("Category not found");
                 return response;
             }
-            category.Name = newName;
-            await _context.SaveChangesAsync();
             response.Data = true;
             return response;
         }

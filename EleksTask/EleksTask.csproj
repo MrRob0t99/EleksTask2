@@ -14,4 +14,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="3.0.0" />
   </ItemGroup>
 
+ <PropertyGroup>
+    <ProjectGuid>644cdb5f-7448-466d-834f-a84de95f9f09</ProjectGuid>
+  </PropertyGroup>
+
 </Project>

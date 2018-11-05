@@ -13,36 +13,24 @@ namespace EleksTask.Services
     {
         private readonly ApplicationContext _context;
         private readonly IMapper _mapper;
+        private readonly IBasketRepository _repository;
 
-        public BasketService(ApplicationContext context, IMapper mapper)
+        public BasketService(ApplicationContext context, IMapper mapper, IBasketRepository repository)
         {
             _context = context;
             _mapper = mapper;
+            _repository = repository;
         }
 
         public async Task<Response<bool>> AddProductToBasketAsync(string userId, int productId)
         {
             var response = new Response<bool>();
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user == null)
+            var result = await _repository.Add(userId, productId);
+            if (result == -1)
             {
-                response.Error = new Error("User not found");
+                response.Error = new Error("Product or User not found");
                 return response;
             }
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
-            if (product == null)
-            {
-                response.Error = new Error("Product not found");
-                return response;
-            }
-
-            var basketProduct = new BasketProduct()
-            {
-                ApplicationUser = user,
-                Product = product
-            };
-            await _context.BasketProducts.AddAsync(basketProduct);
-            await _context.SaveChangesAsync();
             response.Data = true;
             return response;
         }
@@ -50,12 +38,7 @@ namespace EleksTask.Services
         public async Task<Response<BasketDto>> GetInfoProductAsync(string userId)
         {
             var response = new Response<BasketDto>();
-            var productList = await _context
-                .BasketProducts
-                .Where(bp => bp.ApplicationUserId == userId)
-                .Include(p => p.Product)
-                .Select(p => p.Product)
-                .ToListAsync();
+            var productList = await _repository.GetInfoProductAsync(userId);
             response.Data = new BasketDto()
             {
                 TotalPrice = productList.Sum(p => p.Price),
@@ -67,20 +50,14 @@ namespace EleksTask.Services
         public async Task<Response<bool>> DeleteProductFromBasketAsync(string userId, int productId)
         {
             var response = new Response<bool>();
-            var basket =
-                await _context.BasketProducts.FirstOrDefaultAsync(b =>
-                    b.ApplicationUserId == userId && b.ProductId == productId);
-            if (basket == null)
+            var result = await _repository.Delete(userId, productId);
+            if (!result)
             {
                 response.Error = new Error("Not Found");
                 return response;
             }
-
-            _context.Remove(basket);
-            await _context.SaveChangesAsync();
-            response.Data = true;
+            response.Data = result;
             return response;
-
         }
     }
 }

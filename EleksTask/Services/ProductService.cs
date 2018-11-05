@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using EleksTask.Dto;
 using EleksTask.Interface;
 using EleksTask.Models;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace EleksTask.Services
@@ -15,25 +13,27 @@ namespace EleksTask.Services
 
         private readonly ApplicationContext _context;
         private readonly IMapper _mapper;
-        public ProductService(ApplicationContext context, IMapper mapper)
+        private readonly IProductRepository _repository;
+
+        public ProductService(ApplicationContext context, IMapper mapper,IProductRepository repository)
         {
             _context = context;
             _mapper = mapper;
+            _repository = repository;
         }
 
         public async Task<Response<int>> CreateProductAsync(int categoryId, CreateProductDto productDto)
         {
             var response = new Response<int>();
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
-            if (category == null)
+            var product = _mapper.Map<Product>(productDto);
+            var category = await _repository.Add(categoryId, product);
+
+            if (category==-1)
             {
                 response.Error = new Error("Category not found");
                 return response;
             }
-            var product = _mapper.Map<Product>(productDto);
-            product.Category = category;
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+
             response.Data = product.Id;
             return response;
         }
@@ -41,35 +41,28 @@ namespace EleksTask.Services
         public async Task<Response<bool>> DeleteProductAsync(int productId)
         {
             var response = new Response<bool>();
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
-            if (product == null)
+            var result = await _repository.Delete(productId);
+            if (!result)
             {
                 response.Error = new Error("Product not found");
                 return response;
             }
-            _context.Remove(product);
-            await _context.SaveChangesAsync();
-            response.Data = true;
+            response.Data = result;
             return response;
         }
 
         public async Task<Response<List<ProductDto>>> GetAllProducts()
         {
             var response = new Response<List<ProductDto>>();
-            var products = await _context.Products.AsNoTracking().ToListAsync();
+            var products = await _repository.GetAll();
             response.Data = _mapper.Map<List<ProductDto>>(products);
             return response;
         }
 
-        public async Task<Response<List<ProductDto>>> GetProductsByCategoryIdAsync(int categoryId)
+        public async Task<Response<List<ProductDto>>> GetProductsByCategoryIdAsync(GetProductsRequestDto dto)
         {
             var response = new Response<List<ProductDto>>();
-            var products = await _context
-               .Products
-               .AsNoTracking()
-               .Where(p => p.CategoryId == categoryId)
-               .Select(pr => pr)
-               .ToListAsync();
+            var products = await _repository.GetProductsByCategoryId(dto.CategoryId, dto.Skip, dto.Take, dto.Search);
             response.Data = _mapper.Map<List<ProductDto>>(products);
             return response;
         }
@@ -77,7 +70,7 @@ namespace EleksTask.Services
         public async Task<Response<ProductDto>> GetProduct(int productId)
         {
             var response = new Response<ProductDto>();
-            var product = await _context.Products.AsNoTracking().FirstAsync(p => p.Id == productId);
+            var product = await _repository.GetById(productId);
             if (product == null)
                 response.Error = new Error("Product not found");
             else

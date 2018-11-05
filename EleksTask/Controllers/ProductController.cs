@@ -57,9 +57,9 @@ namespace EleksTask
 
         [HttpGet("{categoryId}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetProductsByCategoryIdAsync([FromRoute]int categoryId)
+        public async Task<IActionResult> GetProductsByCategoryIdAsync([FromRoute]GetProductsRequestDto getProducts)
         {
-            var response = await _productService.GetProductsByCategoryIdAsync(categoryId);
+            var response = await _productService.GetProductsByCategoryIdAsync(getProducts);
             if (response.Error != null)
             {
                 return BadRequest(response);

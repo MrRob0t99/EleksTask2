@@ -2,14 +2,17 @@
 using EleksTask.Dto;
 using EleksTask.Models;
 
-public class MappingProfile : Profile
+namespace EleksTask
 {
-    public MappingProfile()
+    public class MappingProfile : Profile
     {
-        CreateMap<CreateProductDto, Product>().ReverseMap();
+        public MappingProfile()
+        {
+            CreateMap<CreateProductDto, Product>().ReverseMap();
 
-        CreateMap<GetAllCategoryDto, Category>().ReverseMap();
+            CreateMap<GetAllCategoryDto, Category>().ReverseMap();
 
-        CreateMap<ProductDto, Product>().ReverseMap();
+            CreateMap<ProductDto, Product>().ReverseMap();
+        }
     }
 }

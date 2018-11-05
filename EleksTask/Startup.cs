@@ -3,6 +3,7 @@ using System.Text;
 using AutoMapper;
 using EleksTask.Interface;
 using EleksTask.Models;
+using EleksTask.Repository;
 using EleksTask.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -105,6 +106,11 @@ namespace EleksTask
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<IBasketService, BasketService>();
+
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<ICategoryRepository, CategoryRepository>();
+            services.AddTransient<IProductRepository, ProductRepository>();
+            services.AddTransient<IBasketRepository, BasketRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

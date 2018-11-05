@@ -19,6 +19,8 @@ namespace EleksTask
             modelBuilder.Entity<BasketProduct>()
                 .HasKey(t => new { t.ProductId, t.ApplicationUserId });
 
+            modelBuilder.Entity<ApplicationUser>().Property(u => u.Email).IsRequired().HasMaxLength(100);
+            modelBuilder.Entity<ApplicationUser>().Property(u => u.UserName).IsRequired().HasMaxLength(30);
         }
 
         public DbSet<Category> Categories { get; set; }

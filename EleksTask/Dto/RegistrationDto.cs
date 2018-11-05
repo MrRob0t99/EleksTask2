@@ -10,6 +10,7 @@ namespace EleksTask.Dto
 
         [Required(ErrorMessage = "Email is required")]
         [DataType(DataType.EmailAddress)]
+        [RegularExpression(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$",ErrorMessage = "Email not valid")]
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
@@ -23,6 +24,8 @@ namespace EleksTask.Dto
 
         public Role Role { get; set; } = Role.Customer;
 
+        [Required]
+        [MaxLength(30)]
         public string UserName { get; set; }
     }
 }

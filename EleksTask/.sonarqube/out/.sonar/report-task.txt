@@ -1,0 +1,7 @@
+organization=mrrob0t99-github
+projectKey=MrRob0t99_EleksTask2
+serverUrl=https://sonarcloud.io
+serverVersion=7.4.0.18669
+dashboardUrl=https://sonarcloud.io/dashboard?id=MrRob0t99_EleksTask2
+ceTaskId=AWbkq1e2pAwoMVoOE41k
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AWbkq1e2pAwoMVoOE41k

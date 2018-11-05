@@ -42,6 +42,19 @@ namespace EleksTask
             return Ok(response);
         }
 
+        [HttpGet("{categoryId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int categoryId)
+        {
+            var response = await _categoryService.GetCategoryByIdAsync(categoryId);
+            if (response.Error != null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllCategories()
