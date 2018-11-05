@@ -21,7 +21,12 @@ namespace EleksTask
             }
             catch (Exception ex)
             {
-                //TODO: Add Logger
+                if (context.Response.HasStarted)
+                {
+                    context.Response.Clear();
+                    await context.Response.WriteAsync(ex.Message);
+                    return;
+                }
             }
         }
     }
